@@ -5,38 +5,30 @@
 // If it fails 3 times, throw an error.
 // Include logs to show what is happening, e.g. “Failed to fetch. Retrying in 2s... (1/3)”
 
-let isLoading = false
+import axios from "axios";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-import axios from "axios"
-
-async function fetchWithRetry(url: string): Promise<any> {
-    const maxRetries = 3;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            isLoading = true;
-            console.log("--- UI: Spinner visible---");
-            const request = await axios.get(url);
-            console.log("Successfully fetched data");
-            return request.data;
-        } catch (error) {
-            if (attempt === maxRetries) {
-                isLoading = false;
-                console.log("--- UI: Spinner hidden ---");
-                throw new Error(`Failed to fetch after ${maxRetries} attempts`);
-            }
-            console.log(`Failed to fetch. Retrying in 2s... (${attempt}/${maxRetries})`);
-            await sleep(2000);
-        }
+// APIs glitch. Write a helper function fetchWithRetry(url).
+async function fetchWithRetry() {
+  const fakeUrl = "https://fakeurl";
+  for (let i = 0; i < 3; i++) {
+    try {
+      await makeRequest(fakeUrl);
+    } catch (error) {
+      console.log(`Failed to fetch. Retrying in 2s... (${i + 1}/3)`);
+      await sleep(2000);
     }
+  }
+  // Include logs to show what is happening, e.g. "Failed to fetch. Retrying in 2s... (1/3)"
 }
 
-fetchWithRetry("https://jsonplaceholder.typicode.com/broken-url")
-    .then(data => console.log(data))
-    .catch(error => console.error(error))
-    .finally(() => {
-        isLoading = false;
-        console.log("--- UI: Spinner hidden ---");
-    });
+async function makeRequest(url: string) {
+  try {
+    await axios.get(url);
+  } catch (error) {
+    console.log("Failed");
+    throw error;
+  }
+}
+
+fetchWithRetry();
